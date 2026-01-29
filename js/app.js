@@ -35,36 +35,69 @@ class MockupGenerator {
         const fileInput = document.getElementById('fileInput');
         const previewThumb = document.getElementById('previewThumb');
 
-        // Click to upload
-        uploadZone.addEventListener('click', () => fileInput.click());
+        // Click to upload - prevent double trigger
+        uploadZone.addEventListener('click', (e) => {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
 
         // File input change
         fileInput.addEventListener('change', (e) => {
-            if (e.target.files[0]) {
-                this.loadImage(e.target.files[0]);
+            const file = e.target.files[0];
+            if (file) {
+                this.loadImage(file);
             }
         });
 
         // Drag and drop
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             uploadZone.classList.add('dragover');
         });
 
-        uploadZone.addEventListener('dragleave', () => {
+        uploadZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             uploadZone.classList.remove('dragover');
         });
 
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             uploadZone.classList.remove('dragover');
-            if (e.dataTransfer.files[0]) {
-                this.loadImage(e.dataTransfer.files[0]);
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                this.loadImage(files[0]);
+            }
+        });
+
+        // Paste from clipboard
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (items) {
+                for (let item of items) {
+                    if (item.type.startsWith('image/')) {
+                        const file = item.getAsFile();
+                        if (file) {
+                            this.loadImage(file);
+                        }
+                        break;
+                    }
+                }
             }
         });
     }
 
     loadImage(file) {
+        // Check if file is an image
+        if (!file.type.startsWith('image/')) {
+            console.warn('File is not an image:', file.type);
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
@@ -79,7 +112,13 @@ class MockupGenerator {
 
                 this.renderMockup();
             };
+            img.onerror = () => {
+                console.error('Failed to load image');
+            };
             img.src = e.target.result;
+        };
+        reader.onerror = () => {
+            console.error('Failed to read file');
         };
         reader.readAsDataURL(file);
     }
