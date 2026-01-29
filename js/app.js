@@ -33,59 +33,42 @@ class MockupGenerator {
     setupUpload() {
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.querySelector('.upload-btn');
 
-        // Prevent uploadZone click from triggering when clicking on input directly
-        fileInput.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        // Upload button click
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInput.click();
-            });
-        }
-
-        // Upload zone click (anywhere except button)
+        // Single click handler for upload zone - simple and clean
         uploadZone.addEventListener('click', (e) => {
-            // Don't trigger if clicking the label/button
-            if (e.target.classList.contains('upload-btn') || e.target.tagName === 'LABEL') {
-                return;
+            // Only trigger if not clicking directly on the input
+            if (e.target.id !== 'fileInput') {
+                e.preventDefault();
+                fileInput.click();
             }
-            fileInput.click();
         });
 
-        // File input change - this is the key event
+        // File input change - main handler
         fileInput.addEventListener('change', (e) => {
             const files = e.target.files;
             if (files && files.length > 0) {
                 this.loadImage(files[0]);
             }
-            // Reset input so same file can be selected again
-            e.target.value = '';
         });
 
         // Drag and drop
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadZone.classList.add('dragover');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.add('dragover');
+            });
         });
 
-        uploadZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadZone.classList.remove('dragover');
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                uploadZone.classList.remove('dragover');
+            });
         });
 
         uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            uploadZone.classList.remove('dragover');
-
             const files = e.dataTransfer.files;
             if (files && files.length > 0) {
                 this.loadImage(files[0]);
