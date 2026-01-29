@@ -309,6 +309,18 @@ class MockupGenerator {
 
         // Enable download button
         document.getElementById('downloadBtn').disabled = false;
+
+        // Update overlay image for long-press save (mobile)
+        this.updateMockupImage();
+    }
+
+    updateMockupImage() {
+        const mockupImage = document.getElementById('mockupImage');
+        if (mockupImage && this.canvas.width > 0) {
+            mockupImage.src = this.canvas.toDataURL('image/png');
+            mockupImage.classList.add('visible');
+            this.canvas.classList.remove('visible');
+        }
     }
 
     drawBackground(ctx, width, height) {
