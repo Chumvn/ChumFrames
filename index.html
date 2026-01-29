@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Mockup Generator | Tạo Mockup Chuyên Nghiệp</title>
+    <meta name="description" content="Tạo mockup ảnh chuyên nghiệp với 35+ khung thiết bị: iPhone, Samsung, iPad, MacBook và nhiều hơn nữa">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">📱</span>
+            <h1>Device Mockup Generator</h1>
+        </div>
+        <p class="tagline">Tạo mockup chuyên nghiệp với 35+ thiết bị</p>
+    </header>
+
+    <!-- Main App -->
+    <main class="app-container">
+        <!-- Left Panel - Upload & Devices -->
+        <aside class="left-panel">
+            <!-- Upload Zone -->
+            <section class="upload-section glass-card">
+                <h2>📤 Upload Ảnh</h2>
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-content">
+                        <span class="upload-icon">🖼️</span>
+                        <p>Kéo thả ảnh vào đây</p>
+                        <span class="upload-or">hoặc</span>
+                        <label class="upload-btn" for="fileInput">Chọn File</label>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+                    <img id="previewThumb" class="preview-thumb" alt="Preview">
+                </div>
+            </section>
+
+            <!-- Device Categories -->
+            <section class="devices-section glass-card">
+                <h2>📱 Chọn Thiết Bị</h2>
+                <div class="device-categories">
+                    <button class="category-btn active" data-category="all">Tất cả</button>
+                    <button class="category-btn" data-category="iphone">iPhone</button>
+                    <button class="category-btn" data-category="samsung">Samsung</button>
+                    <button class="category-btn" data-category="android">Android</button>
+                    <button class="category-btn" data-category="ipad">iPad</button>
+                    <button class="category-btn" data-category="macbook">MacBook</button>
+                    <button class="category-btn" data-category="desktop">Desktop</button>
+                    <button class="category-btn" data-category="watch">Watch</button>
+                    <button class="category-btn" data-category="other">Khác</button>
+                </div>
+                <div class="device-grid" id="deviceGrid">
+                    <!-- Devices loaded via JS -->
+                </div>
+            </section>
+        </aside>
+
+        <!-- Center - Preview Canvas -->
+        <section class="preview-section">
+            <div class="canvas-wrapper glass-card">
+                <canvas id="mockupCanvas"></canvas>
+                <div class="canvas-placeholder" id="canvasPlaceholder">
+                    <span>🎨</span>
+                    <p>Upload ảnh và chọn thiết bị để xem preview</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel - Backgrounds & Export -->
+        <aside class="right-panel">
+            <!-- Background Section -->
+            <section class="backgrounds-section glass-card">
+                <h2>🎨 Chọn Nền</h2>
+                <div class="bg-categories">
+                    <button class="bg-cat-btn active" data-bgcat="gradient">Gradient</button>
+                    <button class="bg-cat-btn" data-bgcat="studio">Studio</button>
+                    <button class="bg-cat-btn" data-bgcat="abstract">3D</button>
+                    <button class="bg-cat-btn" data-bgcat="texture">Texture</button>
+                </div>
+                <div class="bg-grid" id="bgGrid">
+                    <!-- Backgrounds loaded via JS -->
+                </div>
+            </section>
+
+            <!-- Options -->
+            <section class="options-section glass-card">
+                <h2>⚙️ Tùy Chọn</h2>
+                <div class="option-row">
+                    <label>Bóng đổ</label>
+                    <input type="checkbox" id="shadowToggle" checked>
+                </div>
+                <div class="option-row">
+                    <label>Xoay thiết bị</label>
+                    <input type="range" id="rotationSlider" min="-30" max="30" value="0">
+                    <span id="rotationValue">0°</span>
+                </div>
+                <div class="option-row">
+                    <label>Zoom</label>
+                    <input type="range" id="zoomSlider" min="50" max="150" value="100">
+                    <span id="zoomValue">100%</span>
+                </div>
+            </section>
+
+            <!-- Export -->
+            <section class="export-section glass-card">
+                <h2>💾 Xuất Ảnh</h2>
+                <div class="export-options">
+                    <label>Chất lượng:</label>
+                    <select id="exportQuality">
+                        <option value="1">Cao nhất (PNG)</option>
+                        <option value="0.9">Cao (JPG 90%)</option>
+                        <option value="0.8">Trung bình (JPG 80%)</option>
+                    </select>
+                </div>
+                <button class="download-btn" id="downloadBtn">
+                    <span>⬇️</span> Tải Mockup
+                </button>
+            </section>
+        </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made with ❤️ | Deploy on GitHub Pages</p>
+    </footer>
+
+    <script src="js/devices.js"></script>
+    <script src="js/backgrounds.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
