@@ -33,21 +33,39 @@ class MockupGenerator {
     setupUpload() {
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
-        const previewThumb = document.getElementById('previewThumb');
+        const uploadBtn = document.querySelector('.upload-btn');
 
-        // Click to upload - prevent double trigger
-        uploadZone.addEventListener('click', (e) => {
-            if (e.target !== fileInput) {
-                fileInput.click();
-            }
+        // Prevent uploadZone click from triggering when clicking on input directly
+        fileInput.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
 
-        // File input change
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                this.loadImage(file);
+        // Upload button click
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+        }
+
+        // Upload zone click (anywhere except button)
+        uploadZone.addEventListener('click', (e) => {
+            // Don't trigger if clicking the label/button
+            if (e.target.classList.contains('upload-btn') || e.target.tagName === 'LABEL') {
+                return;
             }
+            fileInput.click();
+        });
+
+        // File input change - this is the key event
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                this.loadImage(files[0]);
+            }
+            // Reset input so same file can be selected again
+            e.target.value = '';
         });
 
         // Drag and drop
@@ -69,7 +87,7 @@ class MockupGenerator {
             uploadZone.classList.remove('dragover');
 
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
+            if (files && files.length > 0) {
                 this.loadImage(files[0]);
             }
         });
@@ -92,9 +110,18 @@ class MockupGenerator {
     }
 
     loadImage(file) {
-        // Check if file is an image
-        if (!file.type.startsWith('image/')) {
-            console.warn('File is not an image:', file.type);
+        // Accept all files - let the browser handle validation
+        if (!file) {
+            console.warn('No file provided');
+            return;
+        }
+
+        // Check if it looks like an image
+        const isImage = file.type.startsWith('image/') ||
+            /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(file.name);
+
+        if (!isImage) {
+            alert('Vui lòng chọn file ảnh (JPG, PNG, GIF, WEBP...)');
             return;
         }
 
@@ -114,11 +141,13 @@ class MockupGenerator {
             };
             img.onerror = () => {
                 console.error('Failed to load image');
+                alert('Không thể tải ảnh này, vui lòng thử ảnh khác');
             };
             img.src = e.target.result;
         };
         reader.onerror = () => {
             console.error('Failed to read file');
+            alert('Lỗi đọc file, vui lòng thử lại');
         };
         reader.readAsDataURL(file);
     }
