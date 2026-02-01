@@ -1,4 +1,4 @@
-// ===== Device Mockup Generator - Main App =====
+// ===== Chum Frames - Simple Mockup Generator =====
 
 class MockupGenerator {
     constructor() {
@@ -23,6 +23,7 @@ class MockupGenerator {
         this.setupOptions();
         this.setupDownload();
         this.setupCategoryFilters();
+        this.setupReset();
 
         // Set default background
         const defaultBg = BACKGROUNDS.gradient[0];
@@ -31,19 +32,16 @@ class MockupGenerator {
 
     // ===== Upload Handling =====
     setupUpload() {
-        const uploadZone = document.getElementById('uploadZone');
+        const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
 
-        // Single click handler for upload zone - simple and clean
-        uploadZone.addEventListener('click', (e) => {
-            // Only trigger if not clicking directly on the input
+        uploadArea.addEventListener('click', (e) => {
             if (e.target.id !== 'fileInput') {
                 e.preventDefault();
                 fileInput.click();
             }
         });
 
-        // File input change - main handler
         fileInput.addEventListener('change', (e) => {
             const files = e.target.files;
             if (files && files.length > 0) {
@@ -53,22 +51,22 @@ class MockupGenerator {
 
         // Drag and drop
         ['dragenter', 'dragover'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, (e) => {
+            uploadArea.addEventListener(eventName, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                uploadZone.classList.add('dragover');
+                uploadArea.classList.add('dragover');
             });
         });
 
         ['dragleave', 'drop'].forEach(eventName => {
-            uploadZone.addEventListener(eventName, (e) => {
+            uploadArea.addEventListener(eventName, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                uploadZone.classList.remove('dragover');
+                uploadArea.classList.remove('dragover');
             });
         });
 
-        uploadZone.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('drop', (e) => {
             const files = e.dataTransfer.files;
             if (files && files.length > 0) {
                 this.loadImage(files[0]);
@@ -93,13 +91,8 @@ class MockupGenerator {
     }
 
     loadImage(file) {
-        // Accept all files - let the browser handle validation
-        if (!file) {
-            console.warn('No file provided');
-            return;
-        }
+        if (!file) return;
 
-        // Check if it looks like an image
         const isImage = file.type.startsWith('image/') ||
             /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(file.name);
 
@@ -113,26 +106,43 @@ class MockupGenerator {
             const img = new Image();
             img.onload = () => {
                 this.uploadedImage = img;
-
-                // Show thumbnail
-                const previewThumb = document.getElementById('previewThumb');
-                previewThumb.src = e.target.result;
-                previewThumb.classList.add('visible');
-                document.getElementById('uploadZone').classList.add('has-image');
-
+                
+                // Show preview section
+                document.getElementById('previewSection').classList.add('active');
+                
+                // Update upload area
+                document.getElementById('uploadArea').innerHTML = `
+                    <div class="upload-icon">✅</div>
+                    <p class="upload-title">Ảnh đã tải lên</p>
+                    <p class="upload-hint">${file.name}</p>
+                `;
+                
                 this.renderMockup();
             };
             img.onerror = () => {
-                console.error('Failed to load image');
                 alert('Không thể tải ảnh này, vui lòng thử ảnh khác');
             };
             img.src = e.target.result;
         };
         reader.onerror = () => {
-            console.error('Failed to read file');
             alert('Lỗi đọc file, vui lòng thử lại');
         };
         reader.readAsDataURL(file);
+    }
+
+    // ===== Reset =====
+    setupReset() {
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            this.uploadedImage = null;
+            document.getElementById('previewSection').classList.remove('active');
+            document.getElementById('uploadArea').innerHTML = `
+                <div class="upload-icon">🖼️</div>
+                <p class="upload-title">Chọn hoặc kéo thả ảnh</p>
+                <p class="upload-hint">Hỗ trợ JPG, PNG, WebP</p>
+                <input type="file" id="fileInput" accept="image/*">
+            `;
+            this.setupUpload();
+        });
     }
 
     // ===== Device Grid =====
@@ -148,7 +158,6 @@ class MockupGenerator {
             </div>
         `).join('');
 
-        // Add click handlers
         grid.querySelectorAll('.device-item').forEach(item => {
             item.addEventListener('click', () => {
                 const deviceId = item.dataset.deviceId;
@@ -161,7 +170,6 @@ class MockupGenerator {
     selectDevice(device) {
         this.selectedDevice = device;
 
-        // Update UI
         document.querySelectorAll('.device-item').forEach(item => {
             item.classList.toggle('active', item.dataset.deviceId === device.id);
         });
@@ -172,18 +180,18 @@ class MockupGenerator {
     // ===== Category Filters =====
     setupCategoryFilters() {
         // Device categories
-        document.querySelectorAll('.category-btn').forEach(btn => {
+        document.querySelectorAll('#deviceCategories .category-tab').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#deviceCategories .category-tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.renderDevices(btn.dataset.category);
             });
         });
 
         // Background categories
-        document.querySelectorAll('.bg-cat-btn').forEach(btn => {
+        document.querySelectorAll('#bgCategories .category-tab').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.bg-cat-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#bgCategories .category-tab').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.renderBackgrounds(btn.dataset.bgcat);
             });
@@ -202,7 +210,6 @@ class MockupGenerator {
             </div>
         `).join('');
 
-        // Add click handlers
         grid.querySelectorAll('.bg-item').forEach(item => {
             item.addEventListener('click', () => {
                 const bgId = item.dataset.bgId;
@@ -215,7 +222,6 @@ class MockupGenerator {
     selectBackground(bg) {
         this.selectedBackground = bg;
 
-        // Update UI
         document.querySelectorAll('.bg-item').forEach(item => {
             item.classList.toggle('active', item.dataset.bgId === bg.id);
         });
@@ -251,21 +257,21 @@ class MockupGenerator {
 
     // ===== Canvas Rendering =====
     renderMockup() {
-        const placeholder = document.getElementById('canvasPlaceholder');
+        const placeholder = document.getElementById('mockupPlaceholder');
+        const mockupImage = document.getElementById('mockupImage');
 
         if (!this.selectedDevice || !this.selectedBackground) {
-            placeholder.classList.remove('hidden');
-            this.canvas.classList.remove('visible');
+            placeholder.style.display = 'block';
+            this.canvas.style.display = 'none';
+            mockupImage.style.display = 'none';
             return;
         }
 
-        placeholder.classList.add('hidden');
-        this.canvas.classList.add('visible');
+        placeholder.style.display = 'none';
 
         const device = this.selectedDevice;
         const zoom = this.options.zoom / 100;
 
-        // Calculate canvas size with padding for shadow and rotation
         const padding = 100;
         const canvasWidth = device.width * zoom + padding * 2;
         const canvasHeight = device.height * zoom + padding * 2;
@@ -275,42 +281,32 @@ class MockupGenerator {
 
         const ctx = this.ctx;
 
-        // Clear canvas
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-        // Draw background
         this.drawBackground(ctx, canvasWidth, canvasHeight);
 
-        // Save context for rotation
         ctx.save();
 
-        // Move to center for rotation
         ctx.translate(canvasWidth / 2, canvasHeight / 2);
         ctx.rotate((this.options.rotation * Math.PI) / 180);
         ctx.translate(-device.width * zoom / 2, -device.height * zoom / 2);
 
-        // Draw shadow
         if (this.options.shadow) {
             this.drawShadow(ctx, device, zoom);
         }
 
-        // Draw device frame
         this.drawDeviceFrame(ctx, device, zoom);
 
-        // Draw screen content (uploaded image)
         if (this.uploadedImage) {
             this.drawScreenContent(ctx, device, zoom);
         }
 
-        // Draw device details (notch, dynamic island, etc.)
         this.drawDeviceDetails(ctx, device, zoom);
 
         ctx.restore();
 
-        // Enable download button
         document.getElementById('downloadBtn').disabled = false;
 
-        // Update overlay image for long-press save (mobile)
         this.updateMockupImage();
     }
 
@@ -318,40 +314,25 @@ class MockupGenerator {
         const mockupImage = document.getElementById('mockupImage');
         if (mockupImage && this.canvas.width > 0) {
             mockupImage.src = this.canvas.toDataURL('image/png');
-            mockupImage.classList.add('visible');
-            this.canvas.classList.remove('visible');
+            mockupImage.style.display = 'block';
+            this.canvas.style.display = 'none';
         }
     }
 
     drawBackground(ctx, width, height) {
         const bg = this.selectedBackground;
 
-        // Parse gradient and fill
         if (bg.css.includes('gradient') || bg.css.includes('radial')) {
-            // For complex gradients, create a temp canvas
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = width;
             tempCanvas.height = height;
-            const tempCtx = tempCanvas.getContext('2d');
 
-            // Use element to render CSS gradient
-            const div = document.createElement('div');
-            div.style.cssText = `
-                position: absolute;
-                width: ${width}px;
-                height: ${height}px;
-                background: ${bg.css};
-            `;
-
-            // Simple gradient parsing for common cases
             if (bg.css.startsWith('linear-gradient')) {
                 const gradient = ctx.createLinearGradient(0, 0, width, height);
-                // Default purple-pink gradient
                 gradient.addColorStop(0, '#667eea');
                 gradient.addColorStop(0.5, '#764ba2');
                 gradient.addColorStop(1, '#f093fb');
 
-                // Parse colors from CSS if possible
                 const colors = bg.css.match(/#[a-fA-F0-9]{6}/g);
                 if (colors && colors.length >= 2) {
                     colors.forEach((color, i) => {
@@ -361,12 +342,10 @@ class MockupGenerator {
 
                 ctx.fillStyle = gradient;
             } else if (bg.css.startsWith('radial-gradient') || bg.css.includes('radial-gradient')) {
-                // For mesh gradients, use a solid base with multiple radial overlays
                 const baseColor = bg.css.match(/#[a-fA-F0-9]{6}(?=[^)]*$)/)?.[0] || '#0f0f23';
                 ctx.fillStyle = baseColor;
                 ctx.fillRect(0, 0, width, height);
 
-                // Draw multiple radial gradients
                 const radials = bg.css.match(/radial-gradient\([^)]+\)/g) || [];
                 radials.forEach(radialStr => {
                     const atMatch = radialStr.match(/at\s+(\d+)%\s+(\d+)%/);
@@ -408,11 +387,9 @@ class MockupGenerator {
     }
 
     drawDeviceFrame(ctx, device, zoom) {
-        // Device outer frame
         ctx.fillStyle = device.frameColor;
 
         if (device.circular) {
-            // Circular watch
             ctx.beginPath();
             ctx.arc(device.width * zoom / 2, device.height * zoom / 2,
                 device.width * zoom / 2, 0, Math.PI * 2);
@@ -422,7 +399,6 @@ class MockupGenerator {
             ctx.fill();
         }
 
-        // Bezel effect (subtle highlight)
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.lineWidth = 1;
         if (device.circular) {
@@ -435,44 +411,36 @@ class MockupGenerator {
             ctx.stroke();
         }
 
-        // Draw keyboard for laptops
         if (device.keyboard) {
             this.drawKeyboard(ctx, device, zoom);
         }
 
-        // Draw stand for monitors
         if (device.stand) {
             this.drawStand(ctx, device, zoom);
         }
 
-        // Draw chin for iMac
         if (device.chin) {
             ctx.fillStyle = device.frameColor;
             ctx.fillRect(0, device.height * zoom - device.chin * zoom,
                 device.width * zoom, device.chin * zoom);
         }
 
-        // Draw crown for Apple Watch
         if (device.crown) {
             ctx.fillStyle = '#555';
             ctx.fillRect(device.width * zoom - 5, device.height * zoom * 0.35,
                 10, 30 * zoom);
         }
 
-        // Draw joycons for Switch
         if (device.joycons) {
-            // Left joycon (blue)
             ctx.fillStyle = '#0ab9e6';
             this.roundRect(ctx, 0, 0, 100 * zoom, device.height * zoom, 20 * zoom);
             ctx.fill();
 
-            // Right joycon (red)
             ctx.fillStyle = '#ff3c28';
             this.roundRect(ctx, (device.width - 100) * zoom, 0, 100 * zoom, device.height * zoom, 20 * zoom);
             ctx.fill();
         }
 
-        // RGB glow for gaming monitor
         if (device.rgbGlow) {
             ctx.save();
             ctx.shadowColor = '#ff0080';
@@ -489,18 +457,15 @@ class MockupGenerator {
         const keyboardHeight = 60 * zoom;
         const keyboardY = device.height * zoom - keyboardHeight;
 
-        // Keyboard base
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(0, keyboardY, device.width * zoom, keyboardHeight);
 
-        // Keyboard gradient overlay
         const gradient = ctx.createLinearGradient(0, keyboardY, 0, device.height * zoom);
         gradient.addColorStop(0, 'rgba(255,255,255,0.05)');
         gradient.addColorStop(1, 'rgba(0,0,0,0.1)');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, keyboardY, device.width * zoom, keyboardHeight);
 
-        // Trackpad
         ctx.fillStyle = 'rgba(255,255,255,0.03)';
         const trackpadW = 150 * zoom;
         const trackpadH = 40 * zoom;
@@ -517,7 +482,6 @@ class MockupGenerator {
         const baseWidth = 200 * zoom;
         const baseHeight = 15 * zoom;
 
-        // Stand neck
         ctx.fillStyle = '#2a2a2a';
         ctx.fillRect(
             (device.width * zoom - standWidth) / 2,
@@ -525,7 +489,6 @@ class MockupGenerator {
             standWidth, standHeight
         );
 
-        // Stand base
         ctx.fillStyle = '#1f1f1f';
         this.roundRect(ctx,
             (device.width * zoom - baseWidth) / 2,
@@ -537,7 +500,6 @@ class MockupGenerator {
     drawScreenContent(ctx, device, zoom) {
         ctx.save();
 
-        // Clip to screen area
         ctx.beginPath();
         if (device.circular) {
             ctx.arc(device.width * zoom / 2, device.height * zoom / 2,
@@ -553,7 +515,6 @@ class MockupGenerator {
         }
         ctx.clip();
 
-        // Calculate image scaling to cover screen
         const img = this.uploadedImage;
         const screenW = device.screenW * zoom;
         const screenH = device.screenH * zoom;
@@ -564,13 +525,11 @@ class MockupGenerator {
         let drawW, drawH, drawX, drawY;
 
         if (imgRatio > screenRatio) {
-            // Image is wider - fit height
             drawH = screenH;
             drawW = drawH * imgRatio;
             drawX = device.screenX * zoom - (drawW - screenW) / 2;
             drawY = device.screenY * zoom;
         } else {
-            // Image is taller - fit width
             drawW = screenW;
             drawH = drawW / imgRatio;
             drawX = device.screenX * zoom;
@@ -583,7 +542,6 @@ class MockupGenerator {
     }
 
     drawDeviceDetails(ctx, device, zoom) {
-        // Dynamic Island
         if (device.dynamicIsland) {
             ctx.fillStyle = '#000';
             const islandW = 110 * zoom;
@@ -594,7 +552,6 @@ class MockupGenerator {
             ctx.fill();
         }
 
-        // Notch
         if (device.notch && !device.dynamicIsland) {
             ctx.fillStyle = device.frameColor;
             const notchW = device.notch.width * zoom;
@@ -604,7 +561,6 @@ class MockupGenerator {
             ctx.fill();
         }
 
-        // MacBook notch
         if (device.hasNotch && device.keyboard) {
             ctx.fillStyle = device.frameColor;
             const notchW = 70 * zoom;
@@ -614,7 +570,6 @@ class MockupGenerator {
             ctx.fill();
         }
 
-        // Punch hole camera
         if (device.punchHole) {
             ctx.fillStyle = '#000';
             ctx.beginPath();
@@ -623,7 +578,6 @@ class MockupGenerator {
             ctx.fill();
         }
 
-        // Fold line
         if (device.foldLine) {
             ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.lineWidth = 2;
@@ -659,12 +613,10 @@ class MockupGenerator {
     }
 
     downloadMockup() {
-        const quality = parseFloat(document.getElementById('exportQuality').value);
-        const format = quality === 1 ? 'png' : 'jpeg';
-
+        const format = 'png';
         const link = document.createElement('a');
         link.download = `mockup-${this.selectedDevice?.id || 'device'}-${Date.now()}.${format}`;
-        link.href = this.canvas.toDataURL(`image/${format}`, quality);
+        link.href = this.canvas.toDataURL(`image/${format}`, 1);
         link.click();
     }
 }
