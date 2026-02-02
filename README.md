@@ -1,1 +1,1 @@
-# [chumframes](https://chumvn.github.io/chumframes/)
+# [chumframes](https://chumvn.github.io/ChumFrames/)
